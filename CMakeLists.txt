@@ -73,19 +73,19 @@ else()
 endif()
 
 if(WIN32 AND MSVC AND PA_BUILD_SHARED_LIBS
-  # Check if the user is building PortAudio stand-alone or as part of a larger
-  # project. If this is part of a larger project (i.e. the CMakeLists.txt has
-  # been imported by some other CMakeLists.txt), we don't want to override
-  # that project's global settings.
-  AND "${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_LIST_DIR}")
+        # Check if the user is building PortAudio stand-alone or as part of a larger
+        # project. If this is part of a larger project (i.e. the CMakeLists.txt has
+        # been imported by some other CMakeLists.txt), we don't want to override
+        # that project's global settings.
+        AND "${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_LIST_DIR}")
   option(PA_DLL_LINK_WITH_STATIC_RUNTIME
-    "Link with static runtime libraries (minimizes runtime dependencies)" ON)
+          "Link with static runtime libraries (minimizes runtime dependencies)" ON)
   if(PA_DLL_LINK_WITH_STATIC_RUNTIME)
     foreach(flag_var
-      CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-      CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO
-      CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
-      CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+            CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+            CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO
+            CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+            CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
       if(${flag_var} MATCHES "/MD")
         string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
       endif()
@@ -164,19 +164,19 @@ if(WIN32)
       endif()
       message(STATUS "Downloading ASIO SDK... ${ASIO_SDK_ZIP_PATH}")
       file(DOWNLOAD "https://www.steinberg.net/asiosdk"
-        "${ASIO_SDK_ZIP_PATH}"
-        STATUS ASIO_DOWNLOAD_STATUS
-        SHOW_PROGRESS
-      )
+              "${ASIO_SDK_ZIP_PATH}"
+              STATUS ASIO_DOWNLOAD_STATUS
+              SHOW_PROGRESS
+              )
       if("${ASIO_DOWNLOAD_STATUS}" EQUAL 0)
         find_package(ASIO)
       else()
         list(GET "${ASIO_DOWNLOAD_STATUS}" 1 DOWNLOAD_ERROR)
         message(FATAL_ERROR "Error downloading ASIO SDK: ${DOWNLOAD_ERROR} "
-          "Reconfigure CMake with -DPA_USE_ASIO=OFF to build without ASIO. "
-          "Alternatively, download the ZIP from https://www.steinberg.net/asiosdk "
-          "and put it in ${CMAKE_PREFIX_PATH} or ${CMAKE_CURRENT_BINARY_DIR}"
-        )
+                "Reconfigure CMake with -DPA_USE_ASIO=OFF to build without ASIO. "
+                "Alternatively, download the ZIP from https://www.steinberg.net/asiosdk "
+                "and put it in ${CMAKE_PREFIX_PATH} or ${CMAKE_CURRENT_BINARY_DIR}"
+                )
       endif()
     endif()
   endif()
@@ -297,7 +297,7 @@ elseif(UNIX)
     set_property(TARGET PortAudio PROPERTY C_STANDARD 11)
 
     set(PKGCONFIG_LDFLAGS_PRIVATE
-      "${PKGCONFIG_LDFLAGS_PRIVATE} -framework CoreAudio -framework AudioToolbox -framework AudioUnit -framework CoreFoundation -framework CoreServices")
+            "${PKGCONFIG_LDFLAGS_PRIVATE} -framework CoreAudio -framework AudioToolbox -framework AudioUnit -framework CoreFoundation -framework CoreServices")
   else()
     # Some BSDs have a reimplementation of alsalib, so do not explicitly check for Linux.
     find_package(ALSA)
@@ -321,14 +321,29 @@ elseif(UNIX)
 
     if(ANDROID)
       find_package(OpenSLES)
-      cmake_dependent_option(OPENSLES "Enable support for OpenSLES" ON OPENSLES_FOUND OFF)
+      cmake_dependent_option(PA_USE_OPENSLES "Enable support for OpenSLES" ON OPENSLES_FOUND OFF)
 
-      if(OPENSLES)
+      if(PA_USE_OPENSLES)
         target_link_libraries(PortAudio PRIVATE "${OPENSLES_LIBRARIES}")
         set(PORTAUDIO_PUBLIC_HEADERS "${PORTAUDIO_PUBLIC_HEADERS}" include/pa_opensles.h)
         target_sources(PortAudio PRIVATE src/hostapi/opensles/pa_opensles.c)
         target_compile_definitions(PortAudio PRIVATE PA_USE_OPENSLES=1)
         set(PKGCONFIG_CFLAGS "${PKGCONFIG_CFLAGS} -DPA_USE_OPENSLES=1")
+      endif()
+
+      find_package(Oboe)
+      cmake_dependent_option(PA_USE_OBOE "Enable support for Oboe" ON OBOE_FOUND OFF)
+
+      if(PA_USE_OBOE)
+        target_include_directories(PortAudio PRIVATE ${OBOE_INCLUDE_DIR})
+        target_link_libraries(PortAudio PRIVATE ${OBOE_LIBRARIES})
+        set(PORTAUDIO_PUBLIC_HEADERS "${PORTAUDIO_PUBLIC_HEADERS}" include/pa_oboe.h)
+        target_sources(PortAudio PRIVATE src/hostapi/oboe/pa_oboe.cpp)
+        target_compile_definitions(PortAudio PUBLIC PA_USE_OBOE=1)
+        set(PKGCONFIG_CFLAGS "${PKGCONFIG_CFLAGS} -DPA_USE_OBOE=1")
+        set(PA_PKGCONFIG_LDFLAGS "${PA_PKGCONFIG_LDFLAGS} -lm")
+        set(PA_LIBRARY_DEPENDENCIES ${PA_LIBRARY_DEPENDENCIES} m)
+        set(PKGCONFIG_LDFLAGS_PRIVATE "${PA_PKGCONFIG_LDFLAGS} -lm")
       endif()
     endif()
 
@@ -372,33 +387,33 @@ if(NOT CMAKE_FRAMEWORK)
 
   configure_file(cmake/portaudio-2.0.pc.in "${CMAKE_CURRENT_BINARY_DIR}/portaudio-2.0.pc" @ONLY)
   install(FILES "${CMAKE_CURRENT_BINARY_DIR}/portaudio-2.0.pc"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+          DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
   configure_package_config_file(cmake/PortAudioConfig.cmake.in
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake/portaudio/PortAudioConfig.cmake"
-    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/portaudio"
-    NO_CHECK_REQUIRED_COMPONENTS_MACRO
-  )
+          "${CMAKE_CURRENT_BINARY_DIR}/cmake/portaudio/PortAudioConfig.cmake"
+          INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/portaudio"
+          NO_CHECK_REQUIRED_COMPONENTS_MACRO
+          )
   write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake/portaudio/PortAudioConfigVersion.cmake"
-    VERSION "${PORTAUDIO_VERSION}"
-    COMPATIBILITY SameMajorVersion
+          "${CMAKE_CURRENT_BINARY_DIR}/cmake/portaudio/PortAudioConfigVersion.cmake"
+          VERSION "${PORTAUDIO_VERSION}"
+          COMPATIBILITY SameMajorVersion
   )
   install(EXPORT PortAudio-targets NAMESPACE "PortAudio::" FILE "PortAudioTargets.cmake"
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/portaudio")
   export(TARGETS PortAudio
     FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/portaudio/PortAudioTargets.cmake")
   install(FILES "${CMAKE_CURRENT_BINARY_DIR}/cmake/portaudio/PortAudioConfig.cmake"
-                "${CMAKE_CURRENT_BINARY_DIR}/cmake/portaudio/PortAudioConfigVersion.cmake"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/portaudio")
+          "${CMAKE_CURRENT_BINARY_DIR}/cmake/portaudio/PortAudioConfigVersion.cmake"
+          DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/portaudio")
 
   if(NOT TARGET uninstall)
     configure_file(
-      "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
-      "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-      IMMEDIATE @ONLY)
+            "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
+            "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+            IMMEDIATE @ONLY)
     add_custom_target(uninstall
-      COMMAND ${CMAKE_COMMAND} -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
+            COMMAND ${CMAKE_COMMAND} -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
   endif()
 endif()
 
@@ -440,9 +455,9 @@ if(PA_BUILD_TESTS)
       target_link_libraries(${appl_name} m)
     endif()
     set_target_properties(${appl_name}
-        PROPERTIES
-        FOLDER "Test"
-    )
+            PROPERTIES
+            FOLDER "Test"
+            )
   endmacro()
 
   subdirs(test)

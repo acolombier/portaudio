@@ -52,6 +52,8 @@ PaError PaSGI_Initialize( PaUtilHostApiRepresentation **hostApi, PaHostApiIndex 
 PaError PaAsiHpi_Initialize( PaUtilHostApiRepresentation **hostApi, PaHostApiIndex index );
 PaError PaMacCore_Initialize( PaUtilHostApiRepresentation **hostApi, PaHostApiIndex index );
 PaError PaSkeleton_Initialize( PaUtilHostApiRepresentation **hostApi, PaHostApiIndex index );
+/* Android HostApi */
+PaError PaOboe_Initialize( PaUtilHostApiRepresentation **hostApi, PaHostApiIndex index );
 
 PaError PaOpenSLES_Initialize( PaUtilHostApiRepresentation **hostApi, PaHostApiIndex index );
 
@@ -100,6 +102,10 @@ PaUtilHostApiInitializer *paHostApiInitializers[] =
 
 #if PA_USE_COREAUDIO
         PaMacCore_Initialize,
+#endif
+
+#if PA_USE_OBOE
+                PaOboe_Initialize,
 #endif
 
 #if PA_USE_SKELETON
