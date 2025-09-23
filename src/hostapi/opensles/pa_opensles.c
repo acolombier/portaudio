@@ -291,7 +291,7 @@ PaError PaOpenSLES_Initialize( PaUtilHostApiRepresentation **hostApi, PaHostApiI
     PaOpenslesHostApiRepresentation *openslesHostApi;
     PaDeviceInfo *deviceInfoArray;
 
-    openslesHostApi = (PaOpenslesHostApiRepresentation*)PaUtil_AllocateMemory( sizeof(PaOpenslesHostApiRepresentation) );
+    openslesHostApi = (PaOpenslesHostApiRepresentation*)PaUtil_AllocateZeroInitializedMemory( sizeof(PaOpenslesHostApiRepresentation) );
     if( !openslesHostApi )
     {
         result = paInsufficientMemory;
@@ -316,7 +316,7 @@ PaError PaOpenSLES_Initialize( PaUtilHostApiRepresentation **hostApi, PaHostApiI
     ENSURE( Opensles_InitializeEngine(openslesHostApi), "Initializing engine failed" );
 
     deviceCount = 1;
-    (*hostApi)->deviceInfos = (PaDeviceInfo**)PaUtil_GroupAllocateMemory(
+    (*hostApi)->deviceInfos = (PaDeviceInfo**)PaUtil_GroupAllocateZeroInitializedMemory(
         openslesHostApi->allocations, sizeof(PaDeviceInfo*) * deviceCount );
 
     if( !(*hostApi)->deviceInfos )
@@ -326,7 +326,7 @@ PaError PaOpenSLES_Initialize( PaUtilHostApiRepresentation **hostApi, PaHostApiI
     }
 
     /* allocate all device info structs in a contiguous block */
-    deviceInfoArray = (PaDeviceInfo*)PaUtil_GroupAllocateMemory(
+    deviceInfoArray = (PaDeviceInfo*)PaUtil_GroupAllocateZeroInitializedMemory(
         openslesHostApi->allocations, sizeof(PaDeviceInfo) * deviceCount );
     if( !deviceInfoArray )
     {
@@ -729,7 +729,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
         framesPerHostBuffer = framesPerBuffer;
     }
 
-    stream = (OpenslesStream*)PaUtil_AllocateMemory( sizeof(OpenslesStream) );
+    stream = (OpenslesStream*)PaUtil_AllocateZeroInitializedMemory( sizeof(OpenslesStream) );
 
     if( !stream )
     {
@@ -773,7 +773,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
 
     if( inputChannelCount > 0 )
     {
-        stream->inputStream = (OpenslesInputStream *)PaUtil_AllocateMemory( sizeof(OpenslesInputStream) );
+        stream->inputStream = (OpenslesInputStream *)PaUtil_AllocateZeroInitializedMemory( sizeof(OpenslesInputStream) );
         if( !stream->inputStream ) {
             result = paInsufficientMemory;
             goto error;
@@ -795,7 +795,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
 
     if( outputChannelCount > 0 )
     {
-        stream->outputStream = (OpenslesOutputStream *)PaUtil_AllocateMemory( sizeof(OpenslesOutputStream) );
+        stream->outputStream = (OpenslesOutputStream *)PaUtil_AllocateZeroInitializedMemory( sizeof(OpenslesOutputStream) );
         if( !stream->outputStream ) {
             result = paInsufficientMemory;
             goto error;
@@ -893,10 +893,10 @@ static PaError InitializeOutputStream(PaOpenslesHostApiRepresentation *openslesH
     (*stream->outputStream->audioPlayer)->GetInterface( stream->outputStream->audioPlayer, SL_IID_PLAY, &stream->outputStream->playerItf );
     (*stream->outputStream->audioPlayer)->GetInterface( stream->outputStream->audioPlayer, SL_IID_ANDROIDSIMPLEBUFFERQUEUE, &stream->outputStream->outputBufferQueueItf );
 
-    stream->outputStream->outputBuffers = (void **) PaUtil_AllocateMemory( numberOfBuffers * sizeof(void*) );
+    stream->outputStream->outputBuffers = (void **) PaUtil_AllocateZeroInitializedMemory( numberOfBuffers * sizeof(void*) );
     for( i = 0; i < numberOfBuffers; ++i )
     {
-        stream->outputStream->outputBuffers[i] = (void*) PaUtil_AllocateMemory( stream->framesPerHostCallback * stream->outputStream->bytesPerSample
+        stream->outputStream->outputBuffers[i] = (void*) PaUtil_AllocateZeroInitializedMemory( stream->framesPerHostCallback * stream->outputStream->bytesPerSample
                                                                   * stream->bufferProcessor.outputChannelCount );
         if( !stream->outputStream->outputBuffers[i] )
         {
@@ -995,10 +995,10 @@ static PaError InitializeInputStream( PaOpenslesHostApiRepresentation *openslesH
                                             SL_IID_RECORD,
                                             &stream->inputStream->recorderItf );
 
-    stream->inputStream->inputBuffers = (void **) PaUtil_AllocateMemory( numberOfBuffers * sizeof(void*) );
+    stream->inputStream->inputBuffers = (void **) PaUtil_AllocateZeroInitializedMemory( numberOfBuffers * sizeof(void*) );
     for( i = 0; i < numberOfBuffers; ++i )
     {
-        stream->inputStream->inputBuffers[i] = (void*) PaUtil_AllocateMemory( stream->framesPerHostCallback
+        stream->inputStream->inputBuffers[i] = (void*) PaUtil_AllocateZeroInitializedMemory( stream->framesPerHostCallback
                                                                  * stream->inputStream->bytesPerSample
                                                                  * stream->bufferProcessor.inputChannelCount );
         if( !stream->inputStream->inputBuffers[i] )
